@@ -1,0 +1,4 @@
+services:
+  model:
+    build:
+      dockerfile: Dockerfile_gpu

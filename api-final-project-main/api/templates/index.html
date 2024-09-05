@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no"
+        />
+        <title>Shot Type Classification for Ads </title>
+        <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    </head>
+    <body class="bg-sky-900" style="opacity:0;">
+        <div id="app" class="container mx-auto px-5">
+            <div  class="drop-shadow-lg bg-gray-200 rounded-xl my-4 p-8">
+
+                <div class="flex flex-col lg:flex-row gap-4 ">
+                    <div class="grow lg:border-r-2 lg:border-indigo-500 pr-5">
+                        <div>
+                            <h3 class="font-mono mb-3 text-lg text-sky-900">Shot Type Classification for Ads </h3>
+                    
+                        </div>
+                        <div v-if="errors" class="rounded-xl my-4 p-2 text-red-800 border-2 border-red-800 bg-red-300">
+                            [[errors]]
+                        </div>
+                        <div v-show="loading"><img class="w-28 mx-auto" src="/static/loading.gif" alt=""></div>
+                            
+                            <div v-show="!loading" dragenter.prevent @dragover.prevent @drop.prevent="dropFile">
+                                
+                                <label for="file"
+                                    class="flex justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
+                                    <input id="file" @change="handleFile" ref="inputFile" type="file" name="file" class="hidden">
+                                    <span class="flex items-center space-x-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        <span v-if="!fileName" class="font-medium text-gray-600">
+                                            Drop the video, or
+                                            <span class="text-blue-600 underline">browse</span>
+                                        </span>
+                                        <span v-else>
+                                            [[ fileName ]]
+                                        </span>
+                                    </span>
+                                    
+                                </label>
+                                <input type="text" class="my-5 w-full p-2 rounded-md" name="url" v-model="url" placeholder="Paste the youtube link here ">
+                                <div v-if="fileName || url" class="text-right">
+                                    <div>
+                                        <button @click.prevent="reset" class="mt-4 cursor-pointer px-6 py-2 mx-auto rounded-md text-lg font-semibold text-indigo-100 bg-green-600 mr-3">Reset</button>
+                                        <button @click.prevent="fileName ? handleUpload() : handleUrlYoutube()" class="mt-4 cursor-pointer px-6 py-2 mx-auto rounded-md text-lg font-semibold text-indigo-100 bg-green-600">Submit</button>
+                                    </div>
+                                    <div class="flex justify-end mt-5">
+                                        
+                                          <div class="form-check">
+                                            <input v-model="delete_cache" class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" id="cache" type="checkbox">
+                                            <label class="form-check-label inline-block text-gray-800" for="cache">
+                                              Delete cache
+                                            </label>
+                                          </div>
+                                        
+                                      </div>
+
+                                </div>
+                            </div>
+
+                    </div>
+
+                    <div class="flex-auto h-full  w-full lg:h-none lg:w-64 ">
+                        
+                        <div v-if="video" class="text-center pt-8">
+                            <video class="mx-auto w-96" controls>
+                                <source :src="video" :type="`video/${videoExt}`">
+                              Your browser does not support the video tag.
+                              </video>
+                        </div>
+                    
+                        <div v-else class="text-center pt-8">
+                            <img class="mx-auto w-64"   src="{{ url_for('static', filename='background.webp') }}">                            
+                        </div>    
+                    
+                    </div>
+                    
+                </div>
+                
+                <div v-if="scenes" class="mt-5">
+
+                    <h3 class="font-mono mb-3 text-lg text-sky-900">Video Scenes ([[ Object.keys(scenes).length ]])</h3>
+                    <div v-for="(scene, key) in scenes" :key="key" class="flex flex-col md:flex-row mt-5 pb-3 border-2 border-b-slate-400">
+                        
+                        <div class="basis-1/3 items-center justify-center">
+
+                            <ul class="nav nav-tabs flex flex-row flex-wrap list-none border-b-0 pl-0" :id="`scene-tab_${key}`"
+                                    role="tablist">
+                                <li class="nav-item" role="presentation">
+                                <a :href="`#tabs-images_${key}`" class="
+                                    nav-link
+                                    block
+                                    font-medium
+                                    text-xs
+                                    leading-tight
+                                    uppercase
+                                    border-x-0 border-t-0 border-b-2 border-transparent
+                                    px-6
+                                    py-3
+                                    my-2
+                                    hover:border-transparent hover:bg-gray-100
+                                    focus:border-transparent
+                                    active
+                                " :id="`tabs-images-tab_${key}`" data-bs-toggle="pill" :data-bs-target="`#tabs-images_${key}`" 
+                                    role="tab" :aria-controls="`tabs-images_${key}`"
+                                    aria-selected="true">Frames</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                <a :href="`#tabs-video_${key}`" class="
+                                    nav-link
+                                    block
+                                    font-medium
+                                    text-xs
+                                    leading-tight
+                                    uppercase
+                                    border-x-0 border-t-0 border-b-2 border-transparent
+                                    px-6
+                                    py-3
+                                    my-2
+                                    hover:border-transparent hover:bg-gray-100
+                                    focus:border-transparent
+                                " :id="`tabs-video-tab_${key}`" data-bs-toggle="pill" :data-bs-target="`#tabs-video_${key}`" role="tab"
+                                    :aria-controls="`tabs-video_${key}`" aria-selected="false">Video</a>
+                                </li>
+                
+                            </ul>
+                            <div class="tab-content" id="tabs-tabContent">
+                                <div class="tab-pane fade show active" :id="`tabs-images_${key}`" role="tabpanel" :aria-labelledby="`tabs-home-tab_${key}`">
+                                    <div :id="`carousel_${key}`" class="carousel slide relative" data-bs-ride="carousel">
+                            
+                                        <div class="carousel-inner relative w-full overflow-hidden">
+                                          <div v-for="nframe in scene.frames" :class="nframe == 1 ? 'active' : ''" class="carousel-item relative float-left w-full">
+                                            <img
+                                              :src="`/static/uploads/${scene.dir}/${nframe - 1}.jpg`"
+                                              class="block w-full"
+                                            />
+                                            <div class="carousel-caption hidden md:block absolute text-center">
+                                                <h5 class="text-xl bg-slate-600">Frame [[ nframe ]]</h5>
+                                              </div>
+                                          </div>
+                                          
+                                        </div>
+                                        <button
+                                          class="carousel-control-prev absolute top-0 bottom-0 flex items-center justify-center p-0 text-center border-0 hover:outline-none hover:no-underline focus:outline-none focus:no-underline left-0"
+                                          type="button"
+                                          :data-bs-target="`#carousel_${key}`"
+                                          data-bs-slide="prev"
+                                        >
+                                          <span class="carousel-control-prev-icon inline-block bg-no-repeat" aria-hidden="true"></span>
+                                          <span class="visually-hidden">Previous</span>
+                                        </button>
+                                        <button
+                                          class="carousel-control-next absolute top-0 bottom-0 flex items-center justify-center p-0 text-center border-0 hover:outline-none hover:no-underline focus:outline-none focus:no-underline right-0"
+                                          type="button"
+                                          :data-bs-target="`#carousel_${key}`"
+                                          data-bs-slide="next"
+                                        >
+                                          <span class="carousel-control-next-icon inline-block bg-no-repeat" aria-hidden="true"></span>
+                                          <span class="visually-hidden">Next</span>
+                                        </button>
+                                      </div>
+                                </div>
+                                <div class="tab-pane fade" :id="`tabs-video_${key}`" role="tabpanel" :aria-labelledby="`tabs-video-tab_${key}`">
+                                    <video class="mx-auto w-full" onpause="this.load()" controls>
+                                        <source :src="`${video}#t=${getSeconds(scene.from)},${getSeconds(scene.to)}`" :type="`video/${videoExt}`">
+                                            Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                    
+                            </div>
+                          
+                            
+                        </div>
+                        <div class="basis-1/3 text-xl text-indigo-600 flex flex-col items-center justify-center">
+                            <p class="p-2"><strong>From: </strong> [[scene.from]] </p>
+                            <p class="p-2"><strong>To: </strong> [[scene.to]]</p>
+                        </div>
+                        <div class="basis-1/3 text-xl text-indigo-600 flex flex-col items-center justify-center">
+                            <p class="p-2"><strong>Scale: </strong> [[scene.scale]] </p>
+                            <p class="p-2"><strong>Movement: </strong> [[scene.movement]]</p>
+                        </div>
+                    </div>
+                                   
+                </div>
+
+            </div>
+           
+        </div>
+
+        <script src="https://unpkg.com/vue@3"></script>
+        <script src="{{ url_for('static', filename='app.js') }}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/index.min.js"></script>
+        <script>
+            window.onload = function() {setTimeout(function(){document.body.style.opacity="100";},500);};
+           </script>
+    </body>
+    
+</html>
+

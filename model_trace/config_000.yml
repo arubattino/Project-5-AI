@@ -1,0 +1,44 @@
+seed: 123
+
+data:
+    directory: "/home/app/src/Notebooks/datatrain"
+    labels: "inferred"
+    label_mode: "categorical"
+    validation_split: 0.2
+    image_size: [224, 224]
+    batch_size: 32
+
+model:
+    weights: "imagenet"
+    input_shape: [224, 224, 3]
+    classes: 4
+    dropout_rate: 0.1   # 0.2
+    data_aug_layer:
+        random_flip:
+            mode: "horizontal"
+
+compile:
+    optimizer:
+        adam:
+            learning_rate: 0.005    # 0.01
+            epsilon: 0.05           # 0.1
+            amsgrad: True
+
+    loss: "categorical_crossentropy"
+    metrics: ["accuracy"]
+
+fit:
+    epochs: 30
+    callbacks:
+        model_checkpoint:
+            filepath: "/home/app/src/Notebooks/modelfinal/model.prueba5.hdf5"              # a single epoch in total
+            #filepath: "/home/app/src/experiments/exp_001/model.{epoch:02d}-{val_loss:.4f}.h5"  # so that it saves a different model for each epoch
+            save_best_only: True
+        tensor_board:
+            log_dir: "/home/app/src/Notebooks/modelfinal/exp"
+
+
+
+#h5:  weights are saved
+
+#hdf5: models and weights are saved

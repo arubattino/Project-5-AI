@@ -1,0 +1,5 @@
+path_model: "./weight/model.06-1.5956.h5"
+shape: [224,224]
+classes_movement: ['Motion', 'Pull', 'Push', 'Static']
+classes_scale: ['Close-up Shot', 'Extreme Close-up', 'Full shot', 'Long shot', 'Medium shot']
+frames: 8
